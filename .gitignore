@@ -5,3 +5,6 @@ hook.sh
 certs/*
 archive/*
 .acme-challenges/*
+/.settings/
+/.buildpath
+/.project
