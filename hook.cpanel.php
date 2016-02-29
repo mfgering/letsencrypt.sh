@@ -33,14 +33,28 @@ function deploy_challenge($sub_domain, $token_filename, $token_value) {
 
 function clean_challenge($sub_domain, $token_filename, $token_value) {
 	global $exit_code;
-	print "clean_challenge not implemented\n";
-	$exit_code = 1;
+	$xmlapi = get_xmlapi();
+  $zone = $xmlapi->dumpzone($zone_name);
+  if($zone->result->status == 1) {
+  	$zone_name = zone_for($sub_domain);
+  	if($zone_name) {
+  		$acme_rec = get_acme_challenge_rec($zone, $sub_domain);
+  		if($acme_rec) {
+  			$xmlapi->removezonerecord($zone_name, (string) $acme_rec->Line);
+  		}
+  	} else {
+  		$exit_code = 1;
+  	}  	 
+  } else {
+    print "Could not get the zone: ".$zone->result->statusmsg."\n";
+    $exit_code = 1;
+  }
 }
 
 function deploy_cert($sub_domain, $token_filename, $token_value) {
 	global $exit_code;
 	print "deploy_cert not implemented\n";
-	$exit_code = 1;
+	//$exit_code = 1;
 }
 
 function get_xmlapi() {
@@ -57,8 +71,8 @@ function get_xmlapi() {
 }
 
 function set_acme_challenge($zone_name, $sub_domain, $token_value) {
-	$xmlapi = get_xmlapi();
   global $exit_code;
+	$xmlapi = get_xmlapi();
   $zone = $xmlapi->dumpzone($zone_name);
   if($zone->result->status == 1) {
     $acme_rec = get_acme_challenge_rec($zone, $sub_domain);
