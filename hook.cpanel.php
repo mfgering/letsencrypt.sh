@@ -7,10 +7,6 @@ $token_value = $argv[4];
 $xmlapi = null;
 $exit_code = 0;
 
-$z = zone_for('www.mfg-consulting-llc.com', './named.conf');
-print $z;
-exit(1);
-
 switch($handler) {
   case 'deploy_challenge':
     deploy_challenge($sub_domain, $token_filename, $token_value);
@@ -23,7 +19,6 @@ switch($handler) {
     break;
 }
 exit($exit_code);
-
 
 function deploy_challenge($sub_domain, $token_filename, $token_value) {
   global $exit_code;
