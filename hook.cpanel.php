@@ -7,6 +7,10 @@ $token_value = $argv[4];
 $xmlapi = null;
 $exit_code = 0;
 
+$z = zone_for('www.mfg-consulting-llc.com', './named.conf');
+print $z;
+exit(1);
+
 switch($handler) {
   case 'deploy_challenge':
     deploy_challenge($sub_domain, $token_filename, $token_value);
@@ -33,20 +37,25 @@ function deploy_challenge($sub_domain, $token_filename, $token_value) {
 
 function clean_challenge($sub_domain, $token_filename, $token_value) {
   global $exit_code;
-  $xmlapi = get_xmlapi();
-  $zone = $xmlapi->dumpzone($zone_name);
-  if($zone->result->status == 1) {
-    $zone_name = zone_for($sub_domain);
-    if($zone_name) {
-      $acme_rec = get_acme_challenge_rec($zone, $sub_domain);
-      if($acme_rec) {
-        $xmlapi->removezonerecord($zone_name, (string) $acme_rec->Line);
+  $zone_name = zone_for($sub_domain);
+  if($zone_name) {
+    $xmlapi = get_xmlapi();
+    $zone = $xmlapi->dumpzone($zone_name);
+    if($zone->result->status == 1) {
+      $zone_name = zone_for($sub_domain);
+      if($zone_name) {
+        $acme_rec = get_acme_challenge_rec($zone, $sub_domain);
+        if($acme_rec) {
+          $xmlapi->removezonerecord($zone_name, (string) $acme_rec->Line);
+        }
+      } else {
+        $exit_code = 1;
       }
     } else {
+      print "Could not get the zone for $sub_domain: ".$zone->result->statusmsg."\n";
       $exit_code = 1;
-    }     
+    }
   } else {
-    print "Could not get the zone: ".$zone->result->statusmsg."\n";
     $exit_code = 1;
   }
 }
@@ -101,7 +110,7 @@ function set_acme_challenge($zone_name, $sub_domain, $token_value) {
       }
     }
   } else {
-    print "Could not get the zone: ".$zone->result->statusmsg."\n";
+    print "Could not get the zone for $sub_domain: ".$zone->result->statusmsg."\n";
     $exit_code = 1;
   }
 }
